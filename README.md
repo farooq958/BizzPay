@@ -1,6 +1,6 @@
 # buysellbiz
 
-A new Flutter project by ItectExperts under super vision of Mehran ullah.
+
 
 ## Getting Started
 
