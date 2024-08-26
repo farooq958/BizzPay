@@ -1,0 +1,43 @@
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:bloc/bloc.dart';
+import 'package:buysellbiz/Data/AppData/app_preferences.dart';
+import 'package:buysellbiz/Data/AppData/user_data.dart';
+import 'package:buysellbiz/Data/DataSource/Repository/SocialRepo/socail_repo.dart';
+import 'package:buysellbiz/Domain/User/user_model.dart';
+import 'package:meta/meta.dart';
+
+part '../../State/social_login_state.dart';
+
+class SocialLoginCubit extends Cubit<SocialLoginState> {
+  SocialLoginCubit() : super(SocialLoginInitial());
+
+  setDataOfSocialToServer(data) async {
+    try {
+      await Future.delayed(Duration.zero);
+      emit(SocialLoginLoading());
+      await SocialRepo.socialLogin(data).then((value) async {
+        if (value["Success"] != null && value["Success"] == true) {
+          log('value is here $value');
+          //    print("here");
+          // var  check= null;
+          print("here is the user data ${value['body']['user']}");
+          UserModel userData = UserModel.fromJson((value['body']));
+
+          await SharedPrefs.setUserLoginData(userRawData: value['body']);
+          await SharedPrefs.setLoginToken(value['body']['token']);
+          //print("here3");
+          emit(SocialLoginSuccess(data: userData));
+        } else {
+          emit(SocialLoginError(message: value['error']));
+        }
+      }).catchError((error) {
+        throw error;
+        emit(SocialLoginError(message: error.toString()));
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+}
